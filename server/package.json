@@ -1,0 +1,8 @@
+{
+  "name": "dailyhorseracing",
+  "version": "0.0.1",
+  "description": "Node.js Betfair Exchange API interface to look up for horse racing events, markets and prices.",
+  "main": "server.js",
+  "author": "Ricardo Mendes",
+  "license": "ISC"
+}
