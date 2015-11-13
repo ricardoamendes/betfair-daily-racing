@@ -1,5 +1,8 @@
+'use strict';
+
 // Load plugins
 import gulp from 'gulp';
+import webpack from 'gulp-webpack';
 import sass from 'gulp-ruby-sass';
 import autoprefixer from 'gulp-autoprefixer';
 import jshint from 'gulp-jshint';
@@ -33,7 +36,7 @@ const paths = {
 gulp.task('html', () => {
   return gulp.src(paths.src.html)
     .pipe(gulp.dest(dirs.build.local))
-    .pipe(browserSync.stream())
+    .pipe(browserSync.stream());
 });
 
 // Compile sass into CSS
@@ -41,7 +44,7 @@ gulp.task('styles', () => {
   return sass(paths.src.styles)
     .pipe(autoprefixer('last 2 version'))
     .pipe(gulp.dest(paths.build.local.styles))
-    .pipe(browserSync.stream())
+    .pipe(browserSync.stream());
 });
 
 // Scripts
@@ -49,8 +52,9 @@ gulp.task('scripts', function() {
   return gulp.src(paths.src.scripts)
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'))
+    .pipe(webpack(require('./webpack.config.js')))
     .pipe(gulp.dest(paths.build.local.scripts))
-    .pipe(browserSync.stream())
+    .pipe(browserSync.stream());
 });
 
 // Static server + watching scss/html files
