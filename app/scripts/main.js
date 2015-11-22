@@ -1,29 +1,69 @@
 // main.js
-
-import ko from 'knockout';
-import komapping from 'knockout.mapping';
+import m from 'mithril';
+import config from 'config';
 import socket from './socket';
 
-// Hold the main model
-var eventsModel;
+// Hold events model and view
+var events = {
+    model: null,
+    view: null
+};
 
 /**
- * Handle received events and bind these with the view model.
+ * Generate a DOM tree for event runners.
+ * @param  {Object} runner Runner name and pricing data
+ * @return {HTML}          The DOM tree
+ */
+var getRunners = (runner) => {
+    if (runner){
+        return m("td", [
+            m("div", runner.runnerName),
+            m("div", runner.ex && runner.ex.availableToBack.length && runner.ex.availableToBack[0].price),
+            m("div", runner.ex && runner.ex.availableToLay.length && runner.ex.availableToLay[0].price)
+        ]);
+    }
+};
+
+/**
+ * Handle subsequent events and tell Mithril to re-render only events with updates.
  * @param  {Object} message A list of horse racing events and prices
  * @return {void}
  */
 var onMessageReceive = (message) => {
-    var response = JSON.parse(message.data);
+    // init diff
+    m.startComputation();
 
-    // refresh the view model
-    komapping.fromJS({ events: response }, eventsModel);
+    // assign latest events
+    events.model = JSON.parse(message.data);
+
+    // end diff
+    m.endComputation();
 };
 
-// Create a Socket connection
-socket.init(onMessageReceive);
+// Define the events view-model
+events.model = [];
 
-// Create the view model
-eventsModel = komapping.fromJS({ events: [] });
+// Events view
+events.view = function() {
+    return m("div", [
+            m("table", [
+                events.model.map(function(data, index) {
+                    return m("tr", [
+                        m("td", data.marketStartTime),
+                        m("td", data.event.venue),
+                        m("td", data.event.name),
+                        m("td", data.event.marketName),
+                        getRunners(data.runners[0])
+                    ]);
+                })
+            ])
+    ]);
+};
 
-// Create bindings
-ko.applyBindings(eventsModel);
+// Mount the events view into DOM
+m.mount(document.body, {
+    view: events.view
+});
+
+// Create a socket connection to listen continuosly for updates.
+socket.init(config.ws.host, config.ws.port, onMessageReceive);

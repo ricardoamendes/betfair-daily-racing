@@ -7,17 +7,20 @@ export default class Socket {
 
     /**
      * Initializes client socket connection.
+     * @param  {String} host The host name
+     * @param  {String} port The port number
      * @param  {Function} onMessage Handler for messages received
      * @return {void}
      */
-    static init(onMessage) {
+    static init(host, port, onMessage) {
 
         if ("WebSocket" in window) {
 
             // Open web socket
-            var ws = new WebSocket('ws://localhost:8001/', 'echo-protocol');
+            var ws = new WebSocket(`ws://${host}:${port}/`, 'echo-protocol');
 
             ws.onopen = () => {
+                // websocket is opened.
                 console.debug("Connection is opened...");
             };
 
