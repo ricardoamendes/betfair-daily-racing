@@ -1,14 +1,14 @@
 // connection.js
 'use strict';
 
+import _ from 'lodash';
+import localstorage from 'node-localstorage';
 import https from 'https';
+import session from './session';
 
-const FIRST_INDEX = 0;
-const DEFAULT_ENCODING = 'utf-8';
-const DEFAULT_JSON_FORMAT = '\t';
-const API = 'SportsAPING/v1.0';
-const HOST_NAME = 'api.betfair.com';
-const PATH_NAME = '/exchange/betting/json-rpc/v1';
+const RETRY_LIMIT = 3;
+
+var localStorage = new localstorage.LocalStorage('./storage');
 
 /**
  * Betfair connection handler API.
@@ -16,91 +16,155 @@ const PATH_NAME = '/exchange/betting/json-rpc/v1';
 export default class Connection {
 
     /**
-     * Set defaults to connect to the Betfair betting API.
-     * @param  {String} appKey Betfair API Application Key
-     * @param  {String} ssID   Betfair session token
+     * Initialize and set defaults to connect to the Betfair services.
+     * @param  {String} appKey  Betfair API Application Key
+     * @param  {Object} options Set of options e.g. logging for http requests.
      * @return {void}
      */
-    static init(appKey, ssID) {
-
-        // paths and headers
+    static init(appKey, options) {
+        this.appKey = appKey;
+        this.retryAttempts = 0;
         this.options = {
-            hostname: HOST_NAME,
-            port: 443,
-            path: PATH_NAME,
-            method: 'POST',
-            headers: {
-                'X-Application': appKey,
-                'Accept': 'application/json',
-                'Content-type': 'application/json',
-                'X-Authentication': ssID
-            }
-        };
-
-        // json request
-        this.payload = {
-            jsonrpc: 2.0,
-            id: 1
+            logger: true
         };
     }
 
     /**
-     * Perform a request to the Betfair betting API.
-     * @param  {String} operation Method name
-     * @param  {Object} filters   Request parameters
+     * Initiate an http request.
+     * @param  {Object} headers   Request headers
+     * @param  {Object} payload   Request parameters
      * @param  {Object} callback  Callback handler
      * @return {void}
      */
-    static request(operation, filters, callback) {
+    static request(headers, payload, callback) {
         var response,
-            request;
+            request,
+            requestHeaders = _.merge(this.getDefaultHeaders(), headers);
 
-        // response handler
-        response = res => {
-            let str = '';
-            res.setEncoding(DEFAULT_ENCODING)
-                .on('data', chunk => {
-                    str += chunk;
-                })
-                .on('end', chunk => {
-                    let response = JSON.parse(str);
-                    if (this.isValid(response)) {
-                        callback(response);
-                    }
-                });
-        };
+        if (this.options.logger) {
+
+            let log = {
+                date: new Date().toUTCString(),
+                host: requestHeaders.hostname,
+                path: requestHeaders.path,
+                method: requestHeaders.hostname === session.getHostName() ? 'NA' : JSON.parse(payload).method
+            };
+
+            console.log(`${log.date} - Request - Host ${log.host} | Path ${log.path} | Method ${log.method}`);
+        }
 
         // create request
-        request = https.request(this.options, response);
-        request.on('error', e => {
-            console.log('Problem with request: ' + e.message);
+        request = https.request(requestHeaders, (response) => {
+            this.responseHandler.apply(this, [response, headers, payload, callback]);
         });
 
-        // set operation, parameters and finalizes request
-        this.payload.method = `${API}/${operation}`;
-        this.payload.params = filters;
-        request.write(JSON.stringify(this.payload), DEFAULT_ENCODING);
+        // handle connection errors
+        request.on('error', e => {
+            if (!this.options.logger) {
+                ['Request Failure',
+                JSON.stringify(e.message, null, ' ')].map(msg => console.log(msg));
+            }
+        });
+
+        // set request payload
+        request.write(payload, 'utf-8');
+
+        // finishes sending the request
         request.end();
     }
 
     /**
-     * Checks for error messages e.g. invalid session token.
-     * @param  {Object} response The API response
+     * Handle incoming chunks, retry attempts, session state and final response.
+     * @param  {Object} response  The request response instance
+     * @param  {Object} headers   Request headers
+     * @param  {Object} payload   Request parameters
+     * @param  {Object} callback  Callback handler
+     * @return {void}
+     */
+    static responseHandler(response, headers, payload, callback) {
+        var data = '',
+            retry,
+            onResponseEnd;
+
+        // build original call for retry attempts
+        retry = (ssID) => {
+
+            // retries request along with a fresh session token
+            this.request.apply(this, [_.merge(headers, {
+                headers: {
+                    'X-Authentication': ssID
+                }
+            }), payload, callback]);
+        };
+
+        // response end event handler
+        onResponseEnd = (chunk) => {
+
+            // scoped response
+            let response = JSON.parse(data);
+
+            // session expired ?
+            if (session.isInvalidSession(response)) {
+
+                if (this.options.logger) {
+                    console.log('Retrying...');
+                }
+
+                // check attempted retries
+                if (this.retryAttempts <= RETRY_LIMIT) {
+                    this.retryAttempts += 1; // + try
+                    session.authenticate(retry);
+                }
+
+                return;
+            }
+
+            // valid response ?
+            if (this.isValid(response)) {
+
+                this.retryAttempts = 0; // reset
+                callback(response);
+
+                return;
+            }
+
+            if (this.options.logger) {
+                ['Invalid Response',
+                JSON.stringify(headers, null, ' '),
+                JSON.stringify(payload, null, ' '),
+                JSON.stringify(response, null, ' ')].map(msg => console.log(msg));
+            }
+        };
+
+        // listen and handle incoming response data
+        response.setEncoding('utf-8')
+            .on('data', chunk => data += chunk)
+            .on('end', onResponseEnd);
+    }
+
+    /**
+     * Return Betfair request headers defaults.
+     * @return {Object} Header parameters
+     */
+    static getDefaultHeaders() {
+        return {
+            port: 443,
+            method: 'POST',
+            headers: {
+                'X-Application': this.appKey,
+                'Accept': 'application/json'
+            }
+        };
+    }
+
+    /**
+     * Whether the response provided is valid or not.
+     * @param  {Object} response The server response
      * @return {Boolean} Returns true when errors found.
      */
     static isValid(response) {
-        // Check for errors in response body
-        // Can not be checked against status code as jsonrpc will always return 200
-        if (typeof response.error === 'object') {
 
-            // When error contains solely two fields it will not provide a detailed
-            // message on the exception thrown from API-NG
-            if (Object.keys(response.error).length > 2) {
-                console.log("Request error", JSON.stringify(response, null, DEFAULT_JSON_FORMAT));
-                console.log("Exception Details:", JSON.stringify(response.error.data.APINGException, null, DEFAULT_JSON_FORMAT));
-            }
-            return false;
-        }
-        return true;
+        // when no response state available verify existing errors
+        return typeof response.error === 'undefined' || !response.error.length;
     }
 }

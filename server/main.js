@@ -4,19 +4,20 @@
 import _ from 'lodash';
 import socket from './scripts/socket';
 import connection from './scripts/betfair/connection';
+import session from './scripts/betfair/session';
 import horseracing from './scripts/betfair/horseracing';
 
-// Polling interval for sending data to clients
-const INTERVAL = 30000;
+// Polling interval to Betfair services
+const INTERVAL = 10000;
 
-// Holds in memory the most recent event and pricing data
+// Holds the most recent event and pricing data
 var events = [];
 
 // Retrieves command line args
 var args = process.argv.slice(2);
 
 /**
- * Requests horse racing data every 5 seconds.
+ * Requests horse racing data every {INTERVAL} seconds.
  *
  * @return {void}
  */
@@ -69,26 +70,23 @@ var pollHorseRacingData = () => {
      */
     var handleDailyEvents = (response) => {
 
-        for (let i = 0, len = response.result.length, event, handler; i < len; i++) {
-
-            // Cache current event
-            event = response.result[i];
+        response.result.map((event, index, events) => {
 
             // Build request handler
-            handler = handleEventMarketPrices.bind(this, len, event);
+            let handler = handleEventMarketPrices.bind(this, events.length, event);
 
             // Request event market prices
             horseracing.getMarketPrices(event.marketId, handler);
-        }
 
+        });
     };
 
-    // Kick off horse racing events and prices polling
+    // Kick off polling
     setInterval(() => horseracing.getDailyEvents(handleDailyEvents), INTERVAL);
 };
 
 /**
- * Every 5 seconds, sends to active clients the most recent events and prices.
+ * Send active clients the most recent event and price data.
  *
  * @param  {Object} connection Socket connection instance
  * @return {void}
@@ -104,13 +102,16 @@ var clientRequestHandler = (connection) => {
     })(); // send data immediately to client
 };
 
-// Creates a socket to listen for incoming client requests and send the latest data
+// Initialize a socket to listen for incoming client requests and send the latest data
 socket.init(clientRequestHandler);
 
-// Creates API connection handler and pass app key and session token
-connection.init(args[0], args[1]);
+// Initialize Betfair connection handler and pass app key and session token
+connection.init(args[0]);
 
-// Creates the Horse Racing API interface
+// Initialize Betfair session
+session.init(connection, args[1], args[2]);
+
+// Initialize the Horse Racing API interface
 horseracing.init(connection);
 
 // Start polling Betfair horse racing events and prices
