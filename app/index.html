@@ -1,45 +1,12 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Daily Horse Racing</title>
-  <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Daily Horse Racing</title>
+    <link rel="stylesheet" type="text/css" href="css/bundle.css" inline>
 </head>
-
 <body>
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Venue</th>
-        <th>Name</th>
-        <th>Market Name</th>
-        <th>1st</th>
-        <th>2st</th>
-        <th>3st</th>
-      </tr>
-    </thead>
-    <tbody data-bind="foreach: events">
-      <tr>
-        <td data-bind="text: marketStartTime"></td>
-        <td data-bind="text: event.venue"></td>
-        <td data-bind="text: event.name"></td>
-        <td data-bind="text: marketName"></td>
-        <!-- ko foreach: ko.utils.range(1,3) -->
-        <td>
-            <div data-bind="text: $parent.runners()[$index()].ex.availableToBack()[0].price"></div>
-            <div data-bind="text: $parent.runners()[$index()].ex.availableToLay()[0].price"></div>
-        </td>
-        <!-- /ko -->
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- The time on the server is: <span data-bind='text: serverTime'></span>
-and <span data-bind='text: numUsers'></span> user(s) are connected. -->
-  <script src="js/bundle.js"></script>
+    <script src="js/bundle.js" inline></script>
 </body>
-
 </html>
