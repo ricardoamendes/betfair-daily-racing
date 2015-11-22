@@ -1,2 +1,5 @@
 .sass-cache
 build/
+server/storage
+config.json
+output.log

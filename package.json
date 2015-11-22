@@ -1,6 +1,6 @@
 {
   "name": "dailyhorseracing",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A daily feed with favourite horse racing odds.",
   "main": "index.js",
   "repository": {
@@ -14,4 +14,24 @@
     "babel": "^6.0.15",
     "babel-core": "^6.1.2",
     "babel-loader": "^6.0.1",
-    
+    "babel-preset-es2015": "^6.1.2",
+    "browser-sync": "^2.9.11",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-concat-css": "^2.2.0",
+    "gulp-environments": "^0.1.1",
+    "gulp-inline-source": "^2.1.0",
+    "gulp-jshint": "^1.11.2",
+    "gulp-minify-html": "^1.0.4",
+    "gulp-ruby-sass": "^2.0.5",
+    "gulp-scp": "0.0.3",
+    "gulp-webpack": "^1.5.0",
+    "json-loader": "^0.5.3",
+    "mithril": "^0.2.0",
+    "webpack": "^1.12.3"
+  },
+  "dependencies": {
+    "install": "^0.3.0",
+    "npm": "^3.4.0"
+  }
+}
