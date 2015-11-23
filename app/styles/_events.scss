@@ -1,0 +1,150 @@
+// events.scss
+
+// Variables
+$events-header-height: 3rem;
+$events-table-row-height: 3rem;
+$events-column-width: (100% / 6);
+
+// Main block class
+.events {
+
+    // Layout
+    margin: 20px;
+
+    // Style
+    box-shadow: $shadow-table;
+
+    // Element status bar
+    &__status {
+
+        // Layout
+        height: $events-header-height / 3;
+
+        // Style
+        background: $color-primary-dark;
+    }
+
+    // Element column header
+    &__header {
+
+        // Layout
+        display: flex;
+        height: $events-header-height;
+        line-height: $events-header-height;
+
+        // Style
+        background: $color-primary;
+
+        // Text
+        color: white;
+        font-weight: bold;
+
+        // Header label
+        > div {
+
+            // Layout
+            display: inline-block;
+            width: $events-column-width;
+
+            // Text
+            @include ellipsis;
+            text-align: center;
+        }
+    }
+
+    // Element table content
+    &__table {
+
+        // Text
+        text-align: center;
+
+        // Element table row
+        &__row {
+
+            // Layout
+            display: flex;
+            height: $events-table-row-height;
+            line-height: $events-table-row-height;
+
+            // Style
+            border-bottom: $divider-row;
+
+            // Element table row cell
+            &__cell {
+
+                // Layout
+                display: inline-block;
+                width: $events-column-width;
+                height: 100%;
+
+                // Text
+                @include ellipsis;
+                color: $color-text-secundary;
+                text-align: center;
+
+                // Element price odd
+                &__odds {
+
+                    // Layout
+                    position: relative;
+
+                    // Element back odd
+                    &__back {
+
+                        // Layout
+                        left: 0;
+
+                        // Style
+                        background: $color-jordy-blue;
+                    }
+
+                    // Element lay odd
+                    &__lay {
+
+                        // Style
+                        background: $color-lavender-pink;
+                    }
+                    &__back,
+                    &__lay {
+
+                        // Layout
+                        display: inline-block;
+                        position: absolute;
+                        width: 50%;
+                        height: 100%;
+
+                        // Text
+                        color: $color-text-dark;
+                        font-weight: bold;
+
+                        // Odd left border
+                        &:before {
+                            content: '';
+
+                            // Layout
+                            position: absolute;
+                            display: block;
+                            width: 1px;
+                            height: $events-table-row-height;
+
+                            // Style
+                            background: $color-alto;
+                        }
+                    }
+                }
+
+                // Reset left border from first price
+                &:nth-last-child(3) {
+                    > div:first-child:before {
+                        content: none;
+                    }
+                }
+            }
+
+            // Reset bottom border
+            &:last-child {
+                border: 0;
+            }
+        }
+    }
+}

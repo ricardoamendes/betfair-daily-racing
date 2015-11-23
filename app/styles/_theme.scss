@@ -1,0 +1,35 @@
+// theme.scss
+
+// Theme inspired by Material Design
+// https://www.materialpalette.com/green/light-blue
+
+// FONTS
+$font-family-primary: 'Roboto', Arial, sans-serif;
+
+// PALETTE
+$color-fruit-salad:     #4CAF50;
+$color-apple:           #388E3C;
+$color-zanah:           #C8E6C9;
+$color-alto:            #DADADA;
+$color-mine-shaft:      #212121;
+$color-dove-grey:       #727272;
+$color-jordy-blue:      #72BBEF;
+$color-lavender-pink:   #FAA9BA;
+$color-bluewood:        #273a47;
+
+
+// PRIMARY
+$color-primary: $color-fruit-salad;
+$color-primary-dark: $color-apple;
+$color-primary-light: $color-zanah;
+
+// TEXT
+$color-text-primary: $color-mine-shaft;
+$color-text-secundary: $color-dove-grey;
+$color-text-dark: $color-bluewood;
+
+// DIVIDERS
+$divider-row: 1px solid $color-alto;
+
+// SHADOWS
+$shadow-table: 0 3px 10px rgba(0,0,0,0.23),0 3px 10px rgba(0,0,0,0.16);

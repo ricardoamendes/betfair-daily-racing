@@ -1,1 +1,17 @@
 // main.scss
+
+// Load modules
+@import 'reset';
+@import 'mixins';
+@import 'theme';
+@import 'events';
+
+html {
+    font-family: $font-family-primary;
+}
+
+// Disable text selection
+div {
+    user-select: none;
+    cursor: default;
+}
