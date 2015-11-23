@@ -59,7 +59,7 @@ export default class HorseRacing {
                     }
                 },
                 sort: 'FIRST_TO_START',
-                maxResults: '10',
+                maxResults: '50',
                 marketProjection: ['EVENT', 'COMPETITION', 'RUNNER_DESCRIPTION', 'MARKET_START_TIME']
             }
         };
