@@ -1,0 +1,12 @@
+// utils.scss
+
+$flags: (
+    'GB': 'linear-gradient(90deg, transparent 46%, red 46%, red 56%, transparent 56%), linear-gradient(transparent 38%, white 38%, white 42%, red 42%, red 58%, white 58%, white 62%, transparent 62%), linear-gradient(90deg, transparent 44%, white 44%, white 46%, red 46%, red 56%, white 56%, white 58%, transparent 58%), linear-gradient(45deg, transparent 45%, white 45%, white 48%, red 48%, red 54%, white 54%, white 57%, transparent 57%), linear-gradient(-45deg, #124481 45%, white 45%, white 48%, red 48%, red 54%, white 54%, white 57%, #124481 57%);',
+    'IE': 'linear-gradient(90deg, #00ae00 33.3%, white 33.3%, white 66.6%, orange 66.6%)'
+);
+
+@mixin ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
