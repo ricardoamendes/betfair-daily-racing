@@ -1,13 +1,8 @@
 // horseracing.js
 'use strict';
 
+import config from 'config';
 import localstorage from 'node-localstorage';
-
-// Horse racing type
-const EVENT_TYPE_ID = 7;
-const API = 'SportsAPING/v1.0';
-const HOST_NAME = 'api.betfair.com';
-const PATH_NAME = '/exchange/betting/json-rpc/v1';
 
 var localStorage = new localstorage.LocalStorage('./storage');
 
@@ -36,8 +31,8 @@ export default class HorseRacing {
             endOfDayDate = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate(), 23, 59, 59);
 
         headers = {
-            hostname: HOST_NAME,
-            path: PATH_NAME,
+            hostname: config.apiHostName,
+            path: config.pathName,
             headers: {
                 'X-Authentication': localStorage.getItem('ssID')
             }
@@ -47,11 +42,11 @@ export default class HorseRacing {
         payload = {
             jsonrpc: 2.0,
             id: 1,
-            method: `${API}/listMarketCatalogue`,
+            method: `${config.api}/listMarketCatalogue`,
             params: {
                 filter: {
-                    eventTypeIds: [EVENT_TYPE_ID],
-                    marketCountries: ['GB', 'IRE'],
+                    eventTypeIds: [config.eventTypeId],
+                    marketCountries: ['GB', 'IE'],
                     marketTypeCodes: ['WIN'],
                     marketStartTime: {
                         from: actualDate.toJSON()
@@ -80,7 +75,7 @@ export default class HorseRacing {
         var payload = {
             jsonrpc: 2.0,
             id: 1,
-            method: `${API}/listMarketBook`,
+            method: `${config.api}/listMarketBook`,
             params: {
                 marketIds: [marketId],
                 priceProjection: {
@@ -90,7 +85,7 @@ export default class HorseRacing {
         };
 
         // initiate request
-        this.connection.request(this.getHeaders(), JSON.stringify(payload), response => callback(response.result[0]));
+        this.connection.request(this.getHeaders(), JSON.stringify(payload), response => response.result && callback(response.result[0]));
     }
 
     /**
@@ -99,8 +94,8 @@ export default class HorseRacing {
      */
     static getHeaders() {
         return {
-            hostname: HOST_NAME,
-            path: PATH_NAME,
+            hostname: config.apiHostName,
+            path: config.pathName,
             headers: {
                 'X-Authentication': localStorage.getItem('ssID')
             }

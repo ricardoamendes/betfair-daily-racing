@@ -1,15 +1,13 @@
-// horseracing.js
+// session.js
 'use strict';
 
+import config from 'config';
 import localstorage from 'node-localstorage';
-
-const KEEP_ALIVE_INTERVAL = 20 * 60 * 1000; // 20 min as per BF policy
-const HOST_NAME = 'identitysso.betfair.com';
 
 var localStorage = new localstorage.LocalStorage('./storage');
 
 /**
- * Betfair Horse Racing API interface.
+ * Betfair session API interface.
  */
 export default class Session {
     /**
@@ -23,7 +21,7 @@ export default class Session {
          this.password = password;
 
          // revalidate session token continuosly
-         setInterval(() => this.keepAlive(), KEEP_ALIVE_INTERVAL);
+         setInterval(() => this.keepAlive(), config.keepAliveInterval);
      }
 
      /**
@@ -40,7 +38,7 @@ export default class Session {
 
          // prepare request headers
          headers = {
-             hostname: HOST_NAME,
+             hostname: config.ssoHostName,
              path: '/api/login',
              headers: {
                  'Content-type': 'application/x-www-form-urlencoded'
@@ -65,7 +63,7 @@ export default class Session {
 
          // prepare request headers
          var headers = {
-             hostname: HOST_NAME,
+             hostname: config.ssoHostName,
              path: '/api/keepAlive',
              headers: {
                  'X-Authentication': localStorage.getItem('ssID')
@@ -116,7 +114,7 @@ export default class Session {
       * @param {String} The host name
       */
      static getHostName(response) {
-         return HOST_NAME;
+         return config.ssoHostName;
      }
 
 }

@@ -2,11 +2,10 @@
 'use strict';
 
 import _ from 'lodash';
+import config from 'config';
 import localstorage from 'node-localstorage';
 import https from 'https';
 import session from './session';
-
-const RETRY_LIMIT = 3;
 
 var localStorage = new localstorage.LocalStorage('./storage');
 
@@ -41,17 +40,17 @@ export default class Connection {
             request,
             requestHeaders = _.merge(this.getDefaultHeaders(), headers);
 
-        if (this.options.logger) {
-
-            let log = {
-                date: new Date().toUTCString(),
-                host: requestHeaders.hostname,
-                path: requestHeaders.path,
-                method: requestHeaders.hostname === session.getHostName() ? 'NA' : JSON.parse(payload).method
-            };
-
-            console.log(`${log.date} - Request - Host ${log.host} | Path ${log.path} | Method ${log.method}`);
-        }
+        // if (this.options.logger) {
+        //
+        //     let log = {
+        //         date: new Date().toUTCString(),
+        //         host: requestHeaders.hostname,
+        //         path: requestHeaders.path,
+        //         method: requestHeaders.hostname === session.getHostName() ? 'NA' : JSON.parse(payload).method
+        //     };
+        //
+        //     console.log(`${log.date} - Request - Host ${log.host} | Path ${log.path} | Method ${log.method}`);
+        // }
 
         // create request
         request = https.request(requestHeaders, (response) => {
@@ -111,7 +110,7 @@ export default class Connection {
                 }
 
                 // check attempted retries
-                if (this.retryAttempts <= RETRY_LIMIT) {
+                if (this.retryAttempts <= config.retryLimit) {
                     this.retryAttempts += 1; // + try
                     session.authenticate(retry);
                 }

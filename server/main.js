@@ -2,13 +2,11 @@
 
 // Load modules
 import _ from 'lodash';
+import config from 'config';
 import socket from './scripts/socket';
 import connection from './scripts/betfair/connection';
 import session from './scripts/betfair/session';
 import horseracing from './scripts/betfair/horseracing';
-
-// Polling interval to Betfair services
-const INTERVAL = 10000;
 
 // Holds the most recent event and pricing data
 var events = [];
@@ -70,19 +68,22 @@ var pollHorseRacingData = () => {
      */
     var handleDailyEvents = (response) => {
 
-        response.result.map((event, index, events) => {
+        if (response.result) {
 
-            // Build request handler
-            let handler = handleEventMarketPrices.bind(this, events.length, event);
+            response.result.map((event, index, events) => {
 
-            // Request event market prices
-            horseracing.getMarketPrices(event.marketId, handler);
+                // Build request handler
+                let handler = handleEventMarketPrices.bind(this, events.length, event);
 
-        });
+                // Request event market prices
+                horseracing.getMarketPrices(event.marketId, handler);
+
+            });
+        }
     };
 
     // Kick off polling
-    setInterval(() => horseracing.getDailyEvents(handleDailyEvents), INTERVAL);
+    setInterval(() => horseracing.getDailyEvents(handleDailyEvents), config.pollInterval);
 };
 
 /**
@@ -97,13 +98,13 @@ var clientRequestHandler = (connection) => {
 
         connection.send(JSON.stringify(events));
 
-        setTimeout(send, INTERVAL);
+        setTimeout(send, config.pollInterval);
 
     })(); // send data immediately to client
 };
 
 // Initialize a socket to listen for incoming client requests and send the latest data
-socket.init(clientRequestHandler);
+socket.init(config.origin, clientRequestHandler);
 
 // Initialize Betfair connection handler and pass app key and session token
 connection.init(args[0]);

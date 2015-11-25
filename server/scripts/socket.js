@@ -8,7 +8,16 @@ var http = require('http');
  */
 export default class Socket {
 
-    static init(onRequest) {
+    /**
+     * Initializes server socket.
+     *
+     * @param  {String}   origin    Origin name for security purposes
+     * @param  {Function} onRequest Handle the first client request
+     * @return {void}
+     */
+    static init(origin, onRequest) {
+
+        this.origin = origin;
 
         // Initializes server and web socket connection
         this.ws = new WebSocketServer({
@@ -39,8 +48,9 @@ export default class Socket {
      * @return {Boolean} True if valid connection
      */
     static originIsAllowed(origin) {
-        console.log('Origin ' + origin);
-        // put logic here to detect whether the specified origin is allowed.
-        return true;
+
+        if (origin.includes(this.origin)) {
+            return true;
+        }
     }
 }
