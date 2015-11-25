@@ -1,6 +1,6 @@
 {
   "name": "dailyhorseracing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A daily feed with favourite horse racing odds.",
   "main": "index.js",
   "repository": {
