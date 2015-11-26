@@ -27,8 +27,7 @@ $events-column-width: (100% / 6);
         // Style
         background: $color-lavender-pink;
     }
-    &__back,
-    &__lay {
+    &__back, &__lay {
 
         // Layout
         display: inline-block;
@@ -39,6 +38,9 @@ $events-column-width: (100% / 6);
         // Text
         color: $color-text-dark;
         font-weight: 600;
+
+        // Style
+        transition: background .5s ease-out;
 
         // Odd left border
         &:before {
@@ -53,6 +55,13 @@ $events-column-width: (100% / 6);
             // Style
             background: $color-alto;
         }
+
+        // Price updates
+        &--update {
+
+            // Style
+            background: $color-buttercup;
+        }
     }
 }
 
@@ -64,8 +73,6 @@ $events-column-width: (100% / 6);
     line-height: $events-header-height;
     padding-left: $events-flag-offset;
 
-    background: $color-buttercup;
-
     // Header label
     &__cell {
 
@@ -75,8 +82,10 @@ $events-column-width: (100% / 6);
         // Text
         @include ellipsis;
         text-align: center;
-        font-weight: 300;
-        color: black;
+        //font-weight: 600;
+        color: $color-buttercup;
+        font-size: .8rem;
+        text-transform: uppercase;
     }
 }
 
@@ -89,6 +98,11 @@ $events-column-width: (100% / 6);
 
     // Style
     border-top: 1px solid white;
+
+    &:first-child {
+        // Layout
+        border-top: 0;
+    }
 
     // Element table row cell
     &__cell {
@@ -103,6 +117,13 @@ $events-column-width: (100% / 6);
         text-align: center;
         font-weight: 300;
 
+        // Text labels
+        &__venue, &__market{
+
+            // Text
+            text-align: left;
+        }
+
         // Element price odd
         &__odds {
 
@@ -110,6 +131,7 @@ $events-column-width: (100% / 6);
         }
 
         &:first-child {
+            // Layout
             padding-left: $events-flag-offset;
 
             &:before  {
