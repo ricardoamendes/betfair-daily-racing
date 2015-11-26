@@ -10,6 +10,43 @@ var events = {
 };
 
 /**
+ * Set up mutation observers to listen for price updates at the DOM level.
+ * @param  {DOMElement}  element  The DOM element affected.
+ * @param  {Boolean}     isInitialized Load mutations if node not initialized.
+ * @return {void}
+ */
+var setRunnerPriceObservers = (element, isInitialized) => {
+
+    // Mithril will tell when a node first renders in to DOM
+    if (!isInitialized) {
+
+        // Configuration of the observer
+        let config = { characterData: true, subtree: true };
+
+        // Create an observer instance
+        let observer = new MutationObserver(mutations => {
+
+            // Loop occurred mutations
+            mutations.map(mutation => {
+
+                // Hold the element updated
+                let element = mutation.target.parentElement;
+
+                // Highlight dom node
+                element.classList.add('events__body__row__cell__odds__back--update');
+
+                // Remove highlight
+                setTimeout(() => element.classList.remove("events__body__row__cell__odds__back--update"), 500);
+            });
+        });
+
+        // Pass in the target node, as well as the observer options
+        observer.observe(element, config);
+
+    }
+};
+
+/**
  * Generate a DOM tree for event runners.
  * @param  {Array} runners  Runner names and pricing data
  * @return {Array[HTML]}    The DOM tree
@@ -61,14 +98,11 @@ var renderFavouritePrices = (runners) => {
  * @return {void}
  */
 var onMessageReceive = (message) => {
-    // init diff
-    m.startComputation();
 
     // assign latest events
     events.model = JSON.parse(message.data);
 
-    // end diff
-    m.endComputation();
+    m.redraw();
 };
 
 // Define the events view-model
@@ -87,15 +121,15 @@ events.view = function() {
                     columns.map(column => m('th', { class: 'events__header__row__cell' }, column)))),
 
             // Content body
-            m('tbody', { class: 'events__body' },
+            m('tbody', {  config: setRunnerPriceObservers, class: 'events__body' },
 
                 // Body rows
                 events.model.map((data, index) => {
                     return (
-                        m('tr', { class: 'events__body__row' },
+                        m('tr', {  class: 'events__body__row' },
                             m('td', { class: `events__body__row__cell events__body__row__cell__flag--${data.event.countryCode}` }, data.marketStartTime.match(/\d{2}:\d{2}/)),
-                            m('td', { class: 'events__body__row__cell' }, data.event.venue),
-                            m('td', { class: 'events__body__row__cell' }, data.marketName),
+                            m('td', { class: 'events__body__row__cell events__body__row__cell__venue' }, data.event.venue),
+                            m('td', { class: 'events__body__row__cell events__body__row__cell__market' }, data.marketName),
 
                             // Favourite back/lay odds
                             renderFavouritePrices(data.runners)
@@ -111,6 +145,8 @@ events.view = function() {
 m.mount(document.body, {
     view: events.view
 });
+
+//m.redraw.strategy('diff');
 
 // Create a socket connection to listen continuosly for updates.
 socket.init(config.ws.host, config.ws.port, onMessageReceive);
